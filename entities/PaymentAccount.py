@@ -1,3 +1,6 @@
+from models.paymentAccountModel import PaymentAccountModel
+
+
 class PaymentAccount:
     def __init__(self, connection):
         """
@@ -50,9 +53,13 @@ class PaymentAccount:
             query = """
                 INSERT INTO payment_accounts (user_id, bank_name, balance)
                 VALUES (%s, %s, %s)
+                RETURNING payment_account_id
             """
             cursor.execute(query, (user_id, bank_name, balance))
+            payment_account_id = cursor.fetchone()[0]
         self.connection.commit()  # Сохраняем изменения
+
+        return PaymentAccountModel(payment_account_id, user_id, bank_name, balance)
 
     def read(self, account_id):
         """
@@ -64,7 +71,11 @@ class PaymentAccount:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM payment_accounts WHERE payment_account_id = %s"
             cursor.execute(query, (account_id,))
-            return cursor.fetchone()  # Возвращаем запись о платёжном счете по его идентификатору
+            data = cursor.fetchone()  # Получение первой записи
+
+            if data:
+                return PaymentAccountModel(*data)
+            return None
 
     def list(self):
         """
@@ -75,7 +86,9 @@ class PaymentAccount:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM payment_accounts"
             cursor.execute(query)  # Выполняем запрос для получения всех записей из таблицы 'payment_accounts'
-            return cursor.fetchall()  # Возвращаем все записи
+            payment_accounts_data = cursor.fetchall()  # Получение всех записей
+
+            return [PaymentAccountModel(*data) for data in payment_accounts_data]
 
     def update(self, account_id, **kwargs):
         """
@@ -93,6 +106,8 @@ class PaymentAccount:
             cursor.execute(query, params)  # Выполняем запрос на обновление записи
         self.connection.commit()  # Сохраняем изменения
 
+        return self.read(account_id)
+
     def delete(self, account_id):
         """
         Удаляет платежный счет по его идентификатору.
@@ -104,3 +119,5 @@ class PaymentAccount:
             query = "DELETE FROM payment_accounts WHERE payment_account_id = %s"
             cursor.execute(query, (account_id,))
         self.connection.commit()  # Сохраняем изменения
+
+        return f"Paymeny Account with ID {account_id} deleted."

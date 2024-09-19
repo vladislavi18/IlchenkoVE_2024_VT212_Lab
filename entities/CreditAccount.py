@@ -1,3 +1,6 @@
+from models.creditAccountModel import CreditAccountModel
+
+
 class CreditAccount:
     def __init__(self, connection):
         """
@@ -74,11 +77,15 @@ class CreditAccount:
                 INSERT INTO credit_accounts (user_id, bank_name, start_date, end_date, loan_duration_months, loan_amount, 
                                              monthly_payment, interest_rate, employee_id, payment_account_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING credit_account_id
             """
             cursor.execute(query, (
                 user_id, bank_name, start_date, end_date, loan_duration_months, loan_amount,
                 monthly_payment, interest_rate, employee_id, payment_account_id))
+            credit_accounts_id = cursor.fetchone()[0]
         self.connection.commit()  # Сохраняем изменения
+        return CreditAccountModel(credit_accounts_id, user_id, bank_name, start_date, end_date, loan_duration_months,
+                                  loan_amount, monthly_payment, interest_rate, employee_id, payment_account_id)
 
     def read(self, credit_account_id):
         """
@@ -90,7 +97,11 @@ class CreditAccount:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM credit_accounts WHERE credit_account_id = %s"
             cursor.execute(query, (credit_account_id,))
-            return cursor.fetchone()  # Возвращает запись по идентификатору кредитного счета
+            data = cursor.fetchone()  # Получение первой записи
+
+            if data:
+                return CreditAccountModel(*data)
+            return None
 
     def list(self):
         """
@@ -101,7 +112,10 @@ class CreditAccount:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM credit_accounts"
             cursor.execute(query)  # Выполняем запрос для получения всех записей из таблицы
-            return cursor.fetchall()  # Возвращаем все записи
+            credits_account_data = cursor.fetchall()  # Получение всех записей
+
+            # Возвращаем список экземпляров моделей BankModel для каждого банка
+            return [CreditAccountModel(*data) for data in credits_account_data]
 
     def update(self, credit_account_id, **kwargs):
         """
@@ -119,6 +133,8 @@ class CreditAccount:
             cursor.execute(query, params)  # Выполняем запрос на обновление записи
         self.connection.commit()  # Сохраняем изменения
 
+        return self.read(credit_account_id)
+
     def delete(self, credit_account_id):
         """
         Удаляет кредитный счет по его идентификатору.
@@ -129,3 +145,4 @@ class CreditAccount:
             query = "DELETE FROM credit_accounts WHERE credit_account_id = %s"
             cursor.execute(query, (credit_account_id,))  # Выполняем запрос на удаление записи
         self.connection.commit()  # Сохраняем изменения
+        return f"Credit account with ID {credit_account_id} deleted."

@@ -1,5 +1,7 @@
 import math
 
+from models.userModel import UserModel
+
 
 class User:
     def __init__(self, connection):
@@ -30,8 +32,7 @@ class User:
                     job VARCHAR(255),  -- Работа
                     monthly_income DECIMAL(10, 2) CHECK (monthly_income <= 10000),  -- Ежемесячный доход (макс. 10,000)
                     banks VARCHAR(255)[],  -- Список банков, связанных с пользователем
-                    credit_rating INT CHECK (credit_rating BETWEEN 100 AND 1000),  -- Кредитный рейтинг (от 100 до 1000)
-                    UNIQUE(full_name, birth_date)  -- Уникальное ограничение на полное имя и дату рождения
+                    credit_rating INT CHECK (credit_rating BETWEEN 100 AND 1000)  -- Кредитный рейтинг (от 100 до 1000)
                 );
                 '''
             cursor.execute(query)  # Выполняем запрос для создания таблицы
@@ -67,8 +68,10 @@ class User:
             query = """
                 INSERT INTO users (full_name, birth_date, job, monthly_income, banks, credit_rating)
                 VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING user_id
             """
             cursor.execute(query, (full_name, birth_date, job, monthly_income, banks, credit_rating))
+            user_id = cursor.fetchone()[0]
 
             # Обновляем информацию о количестве клиентов в каждом банке из списка пользователя
             for bank in banks:
@@ -86,6 +89,8 @@ class User:
                 cursor.execute(query, (bank_id,))
         self.connection.commit()  # Сохраняем изменения
 
+        return UserModel(user_id, full_name, birth_date, job, monthly_income, banks, credit_rating)
+
     def read(self, user_id):
         """
         Возвращает данные о пользователе по его идентификатору.
@@ -96,7 +101,11 @@ class User:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM users WHERE user_id = %s"
             cursor.execute(query, (user_id,))
-            return cursor.fetchone()  # Возвращаем запись о пользователе по его идентификатору
+            data = cursor.fetchone()  # Получение первой записи
+
+            if data:
+                return UserModel(*data)
+            return None
 
     def list(self):
         """
@@ -107,7 +116,10 @@ class User:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM users"
             cursor.execute(query)  # Выполняем запрос для получения всех записей из таблицы 'users'
-            return cursor.fetchall()  # Возвращаем все записи
+            user_data = cursor.fetchall()  # Получение всех записей
+
+            # Возвращаем список экземпляров моделей BankModel для каждого банка
+            return [UserModel(*data) for data in user_data]
 
     def update(self, user_id, **kwargs):
         """
@@ -124,6 +136,8 @@ class User:
         with self.connection.cursor() as cursor:
             cursor.execute(query, params)  # Выполняем запрос на обновление записи
         self.connection.commit()  # Сохраняем изменения
+
+        return self.read(user_id)
 
     def delete(self, user_id):
         """
@@ -158,3 +172,5 @@ class User:
             query = "DELETE FROM users WHERE user_id = %s"
             cursor.execute(query, (user_id,))
         self.connection.commit()  # Сохраняем изменения
+
+        return f"User with ID {user_id} deleted."

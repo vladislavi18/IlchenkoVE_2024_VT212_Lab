@@ -1,3 +1,6 @@
+from models.bankOfficeModel import BankOfficeModel
+
+
 class BankOffice:
     def __init__(self, connection):
         """
@@ -71,10 +74,12 @@ class BankOffice:
             query = """
                 INSERT INTO bank_offices (name, address, status, can_place_atm, num_atms, can_provide_credit, dispense_money, accept_money, money_in_office, rent_cost, bank_id)
                 VALUES (%s, %s, %s, %s, 0, %s, %s, %s, %s, %s, %s)
+                RETURNING bank_office_id
             """
             cursor.execute(query, (
                 name, address, status, can_place_atm, can_provide_credit, dispense_money, accept_money, total_money,
                 rent_cost, bank_id))
+            bank_office_id = cursor.fetchone()[0]
 
             # Обновляем количество офисов в банке
             query = """
@@ -82,6 +87,9 @@ class BankOffice:
             """
             cursor.execute(query, (bank_id,))
         self.connection.commit()  # Применение изменений
+
+        return BankOfficeModel(bank_office_id, name, address, status, can_place_atm, can_provide_credit,
+                               dispense_money, accept_money, total_money, rent_cost, bank_id)
 
     def read(self, office_id):
         """
@@ -93,7 +101,12 @@ class BankOffice:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM bank_offices WHERE bank_office_id = %s"
             cursor.execute(query, (office_id,))
-            return cursor.fetchone()  # Возвращает первую запись
+            data = cursor.fetchone()  # Получение первой записи
+
+            # Если банк найден, возвращаем экземпляр модели BankModel
+            if data:
+                return BankOfficeModel(*data)
+            return None
 
     def list(self):
         """
@@ -104,7 +117,10 @@ class BankOffice:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM bank_offices"
             cursor.execute(query)  # Выполнение запроса для получения всех офисов
-            return cursor.fetchall()  # Возвращает все записи
+            banks_office_data = cursor.fetchall()  # Получение всех записей
+
+            # Возвращаем список экземпляров моделей BankOfficeModel для каждого банка
+            return [BankOfficeModel(*data) for data in banks_office_data]
 
     def update(self, office_id, **kwargs):
         """
@@ -121,6 +137,8 @@ class BankOffice:
         with self.connection.cursor() as cursor:
             cursor.execute(query, params)  # Выполнение запроса на обновление
         self.connection.commit()  # Применение изменений
+
+        return self.read(office_id)
 
     def delete(self, office_id):
         """
@@ -144,3 +162,5 @@ class BankOffice:
             query = "DELETE FROM bank_offices WHERE bank_office_id = %s"
             cursor.execute(query, (office_id,))
         self.connection.commit()  # Применение изменений
+
+        return f"Office with ID {office_id} deleted."

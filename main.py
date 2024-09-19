@@ -31,25 +31,31 @@ bank.create("Sberbank")
 bank_office.drop_table()
 bank_office.create_table()
 bank_office.create("office", "ul puskina dom kolotushkina", "working", True, True, True, True, 10.0, 1)
+bank_office.create("office", "ul puskina dom kolotushkina", "working", True, True, True, True, 10.0, 1)
 
 bank_atm.drop_table()
 bank_atm.create_table()
+bank_atm.create("Ya", "working", 1, 1, 1, True, True, 11.0)
 bank_atm.create("Ya", "working", 1, 1, 1, True, True, 11.0)
 
 user.drop_table()
 user.create_table()
 user.create("full name", '2023-03-22', "job", 7500, ["Sberbank"])
+user.create("full name", '2023-03-22', "job", 7500, ["Sberbank"])
 
 employee.drop_table()
 employee.create_table()
+employee.create("full name", '2023-03-22', "job", 1, True, 1, True, 10000)
 employee.create("full name", '2023-03-22', "job", 1, True, 1, True, 10000)
 
 payment_account.drop_table()
 payment_account.create_table()
 payment_account.create(1, "Sberbank", 0)
+payment_account.create(1, "Sberbank", 0)
 
 credit_account.drop_table()
 credit_account.create_table()
+credit_account.create(1, "Sberbank", "2023-03-22", "2023-03-24", 10, 1000000, 100000, 1, 1)
 credit_account.create(1, "Sberbank", "2023-03-22", "2023-03-24", 10, 1000000, 100000, 1, 1)
 
 print("Bank", bank.list())

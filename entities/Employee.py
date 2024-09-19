@@ -1,3 +1,6 @@
+from models.employeeModel import EmployeeModel
+
+
 class Employee:
     def __init__(self, connection):
         """
@@ -67,10 +70,12 @@ class Employee:
             query = """
                 INSERT INTO employees (full_name, birth_date, position, bank_id, works_remotely, bank_office_id, can_provide_credit, salary)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING employee_id
             """
             cursor.execute(query, (
                 full_name, birth_date, position, bank_id, works_remotely, bank_office_id, can_provide_credit,
                 salary))
+            employee_id = cursor.fetchone()[0]
 
             # Обновляем количество сотрудников в таблице 'banks'
             query = """
@@ -78,6 +83,9 @@ class Employee:
             """
             cursor.execute(query, (bank_id,))
         self.connection.commit()  # Сохраняем изменения
+
+        return EmployeeModel(employee_id, full_name, birth_date, position, bank_id, works_remotely, bank_office_id,
+                             can_provide_credit, salary)
 
     def read(self, employee_id):
         """
@@ -89,7 +97,12 @@ class Employee:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM employees WHERE employee_id = %s"
             cursor.execute(query, (employee_id,))
-            return cursor.fetchone()  # Возвращает запись о сотруднике по его идентификатору
+            data = cursor.fetchone()  # Получение первой записи
+
+            # Если банк найден, возвращаем экземпляр модели BankModel
+            if data:
+                return EmployeeModel(*data)
+            return None
 
     def list(self):
         """
@@ -100,7 +113,10 @@ class Employee:
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM employees"
             cursor.execute(query)  # Выполняем запрос для получения всех записей из таблицы 'employees'
-            return cursor.fetchall()  # Возвращаем все записи
+            employees_data = cursor.fetchall()  # Получение всех записей
+
+            # Возвращаем список экземпляров моделей BankModel для каждого банка
+            return [EmployeeModel(*data) for data in employees_data]
 
     def update(self, employee_id, **kwargs):
         """
@@ -117,6 +133,8 @@ class Employee:
         with self.connection.cursor() as cursor:
             cursor.execute(query, params)  # Выполняем запрос на обновление записи
         self.connection.commit()  # Сохраняем изменения
+
+        return self.read(employee_id)
 
     def delete(self, employee_id):
         """
@@ -140,3 +158,5 @@ class Employee:
             query = "DELETE FROM employees WHERE employee_id = %s"
             cursor.execute(query, (employee_id,))
         self.connection.commit()  # Сохраняем изменения
+
+        return f"Employee with ID {employee_id} deleted."

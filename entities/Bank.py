@@ -1,22 +1,23 @@
 import random  # Импортируем модуль random для генерации случайных значений
+from models.bankModel import BankModel
 
 
 class Bank:
     def __init__(self, connection):
         """
         Инициализация класса Bank. Принимает объект connection, который используется для
-        подключения к базе данных
+        подключения к базе данных.
         """
         self.connection = connection
 
     def create_table(self):
         """
-        Создает таблицу 'banks' в базе данных. Таблица включает поля для информации о банке,
-        такие как количество офисов, банкоматов, сотрудников, клиентов, рейтинг, общая сумма денег
-        и процентная ставка
+        Создает таблицу 'banks' в базе данных с полями для хранения информации о банках,
+        включая идентификатор банка, название, количество офисов, банкоматов, сотрудников,
+        клиентов, рейтинг, общую сумму денег и процентную ставку.
         """
         with self.connection.cursor() as cursor:
-            # SQL запрос для создания таблицы
+            # SQL-запрос для создания таблицы
             query = """
                 CREATE TABLE banks (
                     bank_id SERIAL PRIMARY KEY,  -- Идентификатор банка (генерируется автоматически)
@@ -30,32 +31,34 @@ class Bank:
                     interest_rate FLOAT NOT NULL CHECK (interest_rate >= 0 AND interest_rate <= 20)  -- Процентная ставка (0-20%)
                 );
             """
-            cursor.execute(query)  # Выполнение SQL-запроса
+            cursor.execute(query)  # Выполнение SQL-запроса на создание таблицы
         self.connection.commit()  # Применение изменений в базе данных
 
     def drop_table(self):
         """
-        Удаляет таблицу 'banks' из базы данных
+        Удаляет таблицу 'banks' из базы данных, если она существует.
         """
         with self.connection.cursor() as cursor:
             query = """
-                DROP TABLE banks CASCADE;
+                DROP TABLE IF EXISTS banks CASCADE;
             """
             cursor.execute(query)  # Выполнение SQL-запроса на удаление таблицы
         self.connection.commit()  # Применение изменений в базе данных
 
     def create(self, name):
         """
-        Добавляет новый банк в таблицу 'banks'. Процентная ставка корректируется на основе рейтинга:
-        чем выше рейтинг, тем ниже процентная ставка.
+        Создает новый банк с заданным именем и случайными значениями для рейтинга, общей суммы денег
+        и процентной ставки. Процентная ставка корректируется в зависимости от рейтинга.
 
-        :param name: Название банка
+        :param name: Название банка.
+        :return: Возвращает экземпляр модели BankModel с данными нового банка.
         """
-        rating = random.randint(0, 100)  # Случайный рейтинг банка (0-100)
-        total_money = random.randint(0, 1000000)  # Случайная сумма денег (0-1 000 000)
-        interest_rate = random.uniform(0, 20)  # Случайная процентная ставка (0-20%)
+        # Генерация случайных значений для рейтинга, общей суммы денег и процентной ставки
+        rating = random.randint(0, 100)
+        total_money = random.randint(0, 1000000)
+        interest_rate = random.uniform(0, 20)
 
-        # Коррекция процентной ставки в зависимости от рейтинга
+        # Корректировка процентной ставки в зависимости от рейтинга
         if rating > 80:
             interest_rate *= 0.5
         elif rating > 60:
@@ -64,45 +67,61 @@ class Bank:
             interest_rate *= 0.9
 
         with self.connection.cursor() as cursor:
-            # SQL запрос для вставки данных о банке
+            # SQL-запрос для вставки нового банка
             query = """
                 INSERT INTO banks (name, num_offices, num_atms, num_employees, num_clients, rating, total_money, interest_rate)
                 VALUES (%s, 0, 0, 0, 0, %s, %s, %s)
+                RETURNING bank_id
             """
             cursor.execute(query, (name, rating, total_money, round(interest_rate, 2)))  # Вставка данных в таблицу
+            bank_id = cursor.fetchone()[0]  # Получение идентификатора нового банка
         self.connection.commit()  # Применение изменений в базе данных
+
+        # Возвращаем экземпляр модели BankModel с данными о новом банке
+        return BankModel(bank_id, name, 0, 0, 0, 0, rating, total_money, round(interest_rate, 2))
 
     def read(self, bank_id):
         """
-        Возвращает данные о банке по его ID.
+        Получает информацию о банке по его ID.
 
-        :param bank_id: ID банка
-        :return: Данные о банке в виде кортежа или None, если банк не найден.
+        :param bank_id: Идентификатор банка.
+        :return: Экземпляр модели BankModel с данными банка или None, если банк не найден.
         """
         with self.connection.cursor() as cursor:
+            # SQL-запрос для получения данных банка по его ID
             query = "SELECT * FROM banks WHERE bank_id = %s"
-            cursor.execute(query, (bank_id,))  # Получение данных о банке с указанным ID
-            return cursor.fetchone()  # Возвращение первой записи
+            cursor.execute(query, (bank_id,))
+            data = cursor.fetchone()  # Получение первой записи
+
+            # Если банк найден, возвращаем экземпляр модели BankModel
+            if data:
+                return BankModel(*data)
+            return None  # Если банк не найден, возвращаем None
 
     def list(self):
         """
-        Возвращает список всех банков из таблицы 'banks'.
+        Возвращает список всех банков, хранящихся в базе данных.
 
-        :return: Список всех банков в виде кортежей.
+        :return: Список объектов BankModel для каждого банка.
         """
         with self.connection.cursor() as cursor:
+            # SQL-запрос для получения всех данных о банках
             query = "SELECT * FROM banks"
-            cursor.execute(query)  # Получение всех записей из таблицы
-            return cursor.fetchall()  # Возвращение всех записей
+            cursor.execute(query)
+            banks_data = cursor.fetchall()  # Получение всех записей
+
+            # Возвращаем список экземпляров моделей BankModel для каждого банка
+            return [BankModel(*data) for data in banks_data]
 
     def update(self, bank_id, **kwargs):
         """
-        Обновляет данные банка по его ID.
+        Обновляет информацию о банке по его ID. Передаваемые параметры задают поля для обновления.
 
-        :param bank_id: ID банка, который нужно обновить.
-        :param kwargs: Данные для обновления (передаются в формате ключ-значение).
+        :param bank_id: Идентификатор банка, который нужно обновить.
+        :param kwargs: Поля, которые нужно обновить (в формате ключ-значение).
+        :return: Возвращает экземпляр модели BankModel с обновленными данными банка.
         """
-        # Формирование строки для обновления полей (key = value)
+        # Формирование строки для обновления полей (ключ = значение)
         fields = ", ".join([f"{key} = %s" for key in kwargs.keys()])
         query = f"UPDATE banks SET {fields} WHERE bank_id = %s"
         params = list(kwargs.values()) + [bank_id]  # Параметры для обновления
@@ -111,13 +130,21 @@ class Bank:
             cursor.execute(query, params)  # Выполнение запроса на обновление
         self.connection.commit()  # Применение изменений в базе данных
 
+        # Получаем обновленные данные после изменения и возвращаем обновленную модель
+        return self.read(bank_id)
+
     def delete(self, bank_id):
         """
-        Удаляет банк из таблицы по его ID.
+        Удаляет банк из базы данных по его ID.
 
-        :param bank_id: ID банка, который нужно удалить.
+        :param bank_id: Идентификатор банка, который нужно удалить.
+        :return: Сообщение, подтверждающее удаление банка.
         """
         with self.connection.cursor() as cursor:
+            # SQL-запрос для удаления банка по его ID
             query = "DELETE FROM banks WHERE bank_id = %s"
-            cursor.execute(query, (bank_id,))  # Удаление банка с указанным ID
+            cursor.execute(query, (bank_id,))
         self.connection.commit()  # Применение изменений в базе данных
+
+        # Возвращаем подтверждение удаления банка
+        return f"Bank with ID {bank_id} deleted."
