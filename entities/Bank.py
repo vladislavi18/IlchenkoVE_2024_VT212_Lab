@@ -1,8 +1,10 @@
 import random  # Импортируем модуль random для генерации случайных значений
+
+from entities.impl.IBank import IBank
 from models.bankModel import BankModel
 
 
-class Bank:
+class Bank(IBank):
     def __init__(self, connection):
         """
         Инициализация класса Bank. Принимает объект connection, который используется для

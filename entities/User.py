@@ -1,9 +1,10 @@
 import math
 
+from entities.impl.IUser import IUser
 from models.userModel import UserModel
 
 
-class User:
+class User(IUser):
     def __init__(self, connection):
         """
         Инициализация класса User. Принимает объект connection для работы с базой данных.

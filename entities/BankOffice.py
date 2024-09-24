@@ -1,7 +1,8 @@
+from entities.impl.IBankOffice import IBankOffice
 from models.bankOfficeModel import BankOfficeModel
 
 
-class BankOffice:
+class BankOffice(IBankOffice):
     def __init__(self, connection):
         """
         Инициализация класса BankOffice. Принимает объект connection для взаимодействия с базой данных.

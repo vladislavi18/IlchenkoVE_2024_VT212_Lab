@@ -1,7 +1,8 @@
+from entities.impl.ICreditAccount import ICreditAccount
 from models.creditAccountModel import CreditAccountModel
 
 
-class CreditAccount:
+class CreditAccount(ICreditAccount):
     def __init__(self, connection):
         """
         Инициализация класса CreditAccount. Принимает объект connection для работы с базой данных.

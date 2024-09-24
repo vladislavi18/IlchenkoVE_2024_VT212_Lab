@@ -1,7 +1,8 @@
+from entities.impl.IEmployee import IEmployee
 from models.employeeModel import EmployeeModel
 
 
-class Employee:
+class Employee(IEmployee):
     def __init__(self, connection):
         """
         Инициализация класса Employee. Принимает объект connection для работы с базой данных.

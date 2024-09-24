@@ -1,7 +1,8 @@
+from entities.impl.IBankAtm import IBankAtm
 from models.bankAtmModel import BankAtmModel
 
 
-class BankAtm:
+class BankAtm(IBankAtm):
     def __init__(self, connection):
         """
         Инициализация класса BankAtm. Принимает объект connection для взаимодействия с базой данных.

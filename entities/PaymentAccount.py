@@ -1,7 +1,8 @@
+from entities.impl.IPaymentAccount import IPaymentAccount
 from models.paymentAccountModel import PaymentAccountModel
 
 
-class PaymentAccount:
+class PaymentAccount(IPaymentAccount):
     def __init__(self, connection):
         """
         Инициализация класса PaymentAccount. Принимает объект connection для работы с базой данных.
