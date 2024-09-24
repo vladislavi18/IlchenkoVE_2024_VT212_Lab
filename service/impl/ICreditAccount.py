@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from models.employeeModel import EmployeeModel
+from entity.creditAccountModel import CreditAccountModel
 
 
-class IEmployee(ABC):
+class ICreditAccount(ABC):
     @abstractmethod
     def __init__(self, connection):
         pass
@@ -11,18 +11,17 @@ class IEmployee(ABC):
     @abstractmethod
     def create_table(self):
         pass
-
     @abstractmethod
     def drop_table(self):
         pass
 
     @abstractmethod
-    def create(self, full_name, birth_date, position, bank_id, works_remotely, bank_office_id,
-               can_provide_credit, salary):
+    def create(self, user_id, bank_name, start_date, end_date, loan_duration_months, loan_amount,
+               monthly_payment, employee_id, payment_account_id):
         pass
 
     @abstractmethod
-    def read(self, employee_id):
+    def read(self, credit_account_id):
         pass
 
     @abstractmethod
@@ -30,9 +29,9 @@ class IEmployee(ABC):
         pass
 
     @abstractmethod
-    def update(self, employee_id, **kwargs):
+    def update(self, credit_account_id, **kwargs):
         pass
 
     @abstractmethod
-    def delete(self, employee_id):
+    def delete(self, credit_account_id):
         pass

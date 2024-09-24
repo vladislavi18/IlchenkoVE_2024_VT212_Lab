@@ -1,5 +1,5 @@
-from entities.impl.IPaymentAccount import IPaymentAccount
-from models.paymentAccountModel import PaymentAccountModel
+from service.impl.IPaymentAccount import IPaymentAccount
+from entity.paymentAccountModel import PaymentAccountModel
 
 
 class PaymentAccount(IPaymentAccount):

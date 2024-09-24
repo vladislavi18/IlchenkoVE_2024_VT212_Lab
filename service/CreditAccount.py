@@ -1,5 +1,5 @@
-from entities.impl.ICreditAccount import ICreditAccount
-from models.creditAccountModel import CreditAccountModel
+from service.impl.ICreditAccount import ICreditAccount
+from entity.creditAccountModel import CreditAccountModel
 
 
 class CreditAccount(ICreditAccount):

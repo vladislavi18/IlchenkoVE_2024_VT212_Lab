@@ -1,10 +1,9 @@
-import random  # Импортируем модуль random для генерации случайных значений
 from abc import ABC, abstractmethod
 
-from models.bankModel import BankModel
+from entity.employeeModel import EmployeeModel
 
 
-class IBank(ABC):
+class IEmployee(ABC):
     @abstractmethod
     def __init__(self, connection):
         pass
@@ -18,11 +17,12 @@ class IBank(ABC):
         pass
 
     @abstractmethod
-    def create(self, name):
+    def create(self, full_name, birth_date, position, bank_id, works_remotely, bank_office_id,
+               can_provide_credit, salary):
         pass
 
     @abstractmethod
-    def read(self, bank_id):
+    def read(self, employee_id):
         pass
 
     @abstractmethod
@@ -30,9 +30,9 @@ class IBank(ABC):
         pass
 
     @abstractmethod
-    def update(self, bank_id, **kwargs):
+    def update(self, employee_id, **kwargs):
         pass
 
     @abstractmethod
-    def delete(self, bank_id):
+    def delete(self, employee_id):
         pass

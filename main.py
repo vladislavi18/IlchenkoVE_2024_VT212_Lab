@@ -1,12 +1,12 @@
 import psycopg2
 
-from entities.Bank import Bank
-from entities.BankAtm import BankAtm
-from entities.BankOffice import BankOffice
-from entities.CreditAccount import CreditAccount
-from entities.Employee import Employee
-from entities.PaymentAccount import PaymentAccount
-from entities.User import User
+from service.Bank import Bank
+from service.BankAtm import BankAtm
+from service.BankOffice import BankOffice
+from service.CreditAccount import CreditAccount
+from service.Employee import Employee
+from service.PaymentAccount import PaymentAccount
+from service.User import User
 
 connection = psycopg2.connect(
     dbname="postgres",

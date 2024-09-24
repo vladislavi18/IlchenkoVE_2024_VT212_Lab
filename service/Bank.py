@@ -1,7 +1,7 @@
 import random  # Импортируем модуль random для генерации случайных значений
 
-from entities.impl.IBank import IBank
-from models.bankModel import BankModel
+from service.impl.IBank import IBank
+from entity.bankModel import BankModel
 
 
 class Bank(IBank):

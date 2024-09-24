@@ -1,7 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 
-from models.userModel import UserModel
+from entity.userModel import UserModel
 
 
 class IUser(ABC):

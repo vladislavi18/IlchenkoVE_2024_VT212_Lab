@@ -1,5 +1,5 @@
-from entities.impl.IBankAtm import IBankAtm
-from models.bankAtmModel import BankAtmModel
+from service.impl.IBankAtm import IBankAtm
+from entity.bankAtmModel import BankAtmModel
 
 
 class BankAtm(IBankAtm):

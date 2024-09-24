@@ -1,5 +1,5 @@
-from entities.impl.IEmployee import IEmployee
-from models.employeeModel import EmployeeModel
+from service.impl.IEmployee import IEmployee
+from entity.employeeModel import EmployeeModel
 
 
 class Employee(IEmployee):

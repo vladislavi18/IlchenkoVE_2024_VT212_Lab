@@ -1,5 +1,5 @@
-from entities.impl.IBankOffice import IBankOffice
-from models.bankOfficeModel import BankOfficeModel
+from service.impl.IBankOffice import IBankOffice
+from entity.bankOfficeModel import BankOfficeModel
 
 
 class BankOffice(IBankOffice):

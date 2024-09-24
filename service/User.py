@@ -1,7 +1,7 @@
 import math
 
-from entities.impl.IUser import IUser
-from models.userModel import UserModel
+from service.impl.IUser import IUser
+from entity.userModel import UserModel
 
 
 class User(IUser):
