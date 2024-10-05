@@ -1,5 +1,9 @@
 import random  # Импортируем модуль random для генерации случайных значений
 
+from entity.bankAtmModel import BankAtmModel
+from entity.bankOfficeModel import BankOfficeModel
+from entity.employeeModel import EmployeeModel
+from entity.userModel import UserModel
 from service.impl.IBank import IBank
 from entity.bankModel import BankModel
 
@@ -150,3 +154,52 @@ class Bank(IBank):
 
         # Возвращаем подтверждение удаления банка
         return f"Bank with ID {bank_id} deleted."
+
+    def __get_all_bankATMs_from_banks(self, bank_id):
+        with self.connection.cursor() as cursor:
+            query = "SELECT * FROM atms WHERE bank_id = %s"
+            cursor.execute(query, (bank_id,))
+            atms_data = cursor.fetchall()
+        self.connection.commit()
+
+        return [BankAtmModel(*data) for data in atms_data]
+
+    def __get_all_bankOffices_from_banks(self, bank_id):
+        with self.connection.cursor() as cursor:
+            query = "SELECT * FROM bank_offices WHERE bank_id = %s"
+            cursor.execute(query, (bank_id,))
+            banks_office_data = cursor.fetchall()
+        self.connection.commit()
+
+        return [BankOfficeModel(*data) for data in banks_office_data]
+
+    def __get_all_employees_from_banks(self, bank_id):
+        with self.connection.cursor() as cursor:
+            query = "SELECT * FROM employees WHERE bank_id = %s"
+            cursor.execute(query, (bank_id,))
+            employees_data = cursor.fetchall()
+        self.connection.commit()
+
+        return [EmployeeModel(*data) for data in employees_data]
+
+    def __get_all_users_from_banks(self, bank_id):
+        with self.connection.cursor() as cursor:
+            query = """SELECT name FROM banks WHERE bank_id = %s"""
+            cursor.execute(query, (bank_id,))
+            bank_name = cursor.fetchone()[0]
+
+            query = "SELECT * FROM users WHERE banks @> %s::varchar[]"
+            cursor.execute(query, (f'{{{bank_name}}}',))
+            user_data = cursor.fetchall()
+
+        self.connection.commit()
+
+        return [UserModel(*data) for data in user_data]
+
+    def get_all_info_about_bank(self, bank_id):
+        bank_atms = self.__get_all_bankATMs_from_banks(bank_id)
+        bank_offices = self.__get_all_bankOffices_from_banks(bank_id)
+        employees = self.__get_all_employees_from_banks(bank_id)
+        users = self.__get_all_users_from_banks(bank_id)
+
+        print("bank_atms:", bank_atms, "\nbank_offices:", bank_offices, "\nemployees:", employees, "\nusers:", users)

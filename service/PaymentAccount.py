@@ -86,8 +86,8 @@ class PaymentAccount(IPaymentAccount):
         """
         with self.connection.cursor() as cursor:
             query = "SELECT * FROM payment_accounts"
-            cursor.execute(query)  # Выполняем запрос для получения всех записей из таблицы 'payment_accounts'
-            payment_accounts_data = cursor.fetchall()  # Получение всех записей
+            cursor.execute(query)
+            payment_accounts_data = cursor.fetchall()
 
             return [PaymentAccountModel(*data) for data in payment_accounts_data]
 

@@ -1,5 +1,7 @@
 import math
 
+from entity.creditAccountModel import CreditAccountModel
+from entity.paymentAccountModel import PaymentAccountModel
 from service.impl.IUser import IUser
 from entity.userModel import UserModel
 
@@ -175,3 +177,26 @@ class User(IUser):
         self.connection.commit()  # Сохраняем изменения
 
         return f"User with ID {user_id} deleted."
+
+    def __get_all_credit_accounts(self, user_id):
+        with self.connection.cursor() as cursor:
+            query = "SELECT * FROM credit_accounts WHERE user_id = %s"
+            cursor.execute(query, (user_id,))
+            credit_account_data = cursor.fetchall()
+        self.connection.commit()
+
+        return [CreditAccountModel(*data) for data in credit_account_data]
+
+    def __get_all_payment_accounts(self, user_id):
+        with self.connection.cursor() as cursor:
+            query = "SELECT * FROM payment_accounts WHERE user_id = %s"
+            cursor.execute(query, (user_id,))
+            payment_accounts_data = cursor.fetchall()
+            self.connection.commit()
+
+        return [PaymentAccountModel(*data) for data in payment_accounts_data]
+
+    def get_all_info_about_user(self, user_id):
+        credit_accounts = self.__get_all_credit_accounts(user_id)
+        payment_accounts = self.__get_all_payment_accounts(user_id)
+        print("credit_accounts:", credit_accounts, "\npayment_accounts:", payment_accounts)
