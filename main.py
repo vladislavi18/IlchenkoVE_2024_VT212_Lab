@@ -1,12 +1,7 @@
 import random
 import psycopg2
 from data import *
-from entity.bankAtmModel import BankAtmModel
-from entity.bankOfficeModel import BankOfficeModel
-from entity.creditAccountModel import CreditAccountModel
 from entity.employeeModel import EmployeeModel
-from entity.paymentAccountModel import PaymentAccountModel
-from entity.userModel import UserModel
 from service.Bank import Bank
 from service.BankAtm import BankAtm
 from service.BankOffice import BankOffice
